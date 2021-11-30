@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <h1>Register</h1>
+  <form id="reg">
+    <input type="email">
+    <input type="password">
+    <button type="submit">Send</button>
+  </form>
+  <br>
+  <br>
+  <h1>LogIn</h1>
+  <form id="logIn">
+    <input type="email">
+    <input type="password">
+    <button type="submit">Send</button>
+  </form>
+
+</body>
+
+<script>
+  const formReg = document.querySelector('#reg');
+  formReg.addEventListener('submit', (e) => {
+    const email = e.target[0].value;
+    const password = e.target[1].value;
+
+    const res = fetch('api/registration', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8'
+      },
+      body: JSON.stringify({ email, password })
+    })
+  })
+  const formLogIn = document.querySelector('#logIn');
+  formLogIn.addEventListener('submit', (e) => {
+
+    const email = e.target[0].value;
+    const password = e.target[1].value;
+
+    const res = fetch('api/logIn', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8'
+      },
+      body: JSON.stringify({ email, password })
+    })
+  })
+</script>
+
+
+</html>
