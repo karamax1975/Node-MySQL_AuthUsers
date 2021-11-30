@@ -18,11 +18,14 @@
   <br>
   <br>
   <h1>LogIn</h1>
-  <form id="logIn">
-    <input type="email">
-    <input type="password">
-    <button type="submit">Send</button>
-  </form>
+  <div>
+    <form id="logIn">
+      <input type="email">
+      <input type="password">
+      <button type="submit">Send</button>
+    </form>
+    <a id="logOut" href="#">LogOut</a>
+  </div>
 
 </body>
 
@@ -40,6 +43,7 @@
       body: JSON.stringify({ email, password })
     })
   })
+  // ------------------------------
   const formLogIn = document.querySelector('#logIn');
   formLogIn.addEventListener('submit', (e) => {
 
@@ -54,6 +58,15 @@
       body: JSON.stringify({ email, password })
     })
   })
+  // ----------------------------------------
+  const logOut = document.querySelector('#logOut');
+  logOut.addEventListener('click', (e) => {
+    const res = fetch('api/logOut', {
+      method: 'POST',
+
+    })
+  })
+
 </script>
 
 

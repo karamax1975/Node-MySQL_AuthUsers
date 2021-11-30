@@ -1,5 +1,6 @@
-const db = require('../models/index_model.js');
-const { registration, userActivate, userCheck } = require('../service/user-service.js');
+
+const { registration, userActivate, logIn } = require('../service/user-service.js');
+
 
 class User {
 
@@ -20,23 +21,35 @@ class User {
     }
   }
 
-  async login(req, res, next) {
-    const { email, password } = req.body;
-    const check = await userCheck(email, password);
+  async logOut(req, res, next) {
+    const { referenceToken } = req.cookies;
     try {
-      const { id, isActivated, email } = check;
-      if (!isActivated) {
-        res.redirect(`${process.env.API_URL}/messages`) /// page width info for email active
-      } else {
-        // const { referenceToken } = req.cookies;
-        res.send("Ok")
-        console.log("Acsess Ok");
-      }
+      const token = await userService.logOut(referenceToken);
+      res.clearCookie('referenceToken');
+      return res.json(token);
 
     } catch (e) {
       console.log(e);
-      res.send(e.message)
     }
+  }
+
+  async login(req, res) {
+    const { email, password } = req.body;
+    const checkUser = await logIn(email, password);
+
+    try {
+      const { userToken, isActivated } = checkUser;
+      if (!isActivated) {
+        res.redirect(`${process.env.API_URL}/messages`) /// page width info for email active
+      } else {
+        res.cookie('referenceToken', userToken.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true })
+        res.send("Ok") /// redirect for admin page 
+      }
+    } catch (e) {
+      console.log(e);
+    }
+
+
   }
 
 

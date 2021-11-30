@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const { user, token } = require('../models/index_model.js');
 const mailService = require('./mail-service.js');
-const { generateTokens, decodeToken } = require('./token-service.js');
+const { generateTokens } = require('./token-service.js');
 
 
 class UserService {
@@ -36,36 +36,55 @@ class UserService {
     }
   }
 
+  async logIn(userEmail, userPassword) {
+    const findUser = await user.findOne({ where: { email: userEmail } });
+    if (!findUser) throw new Error('No user in BD');
+    else {
+      const { id, isActivated, email, password } = findUser.dataValues;
+      const isPasswordEquals = await bcrypt.compare(userPassword, password);
+      if (!isPasswordEquals) throw new Error('Bad password');
+      else {
+        const newToken = await generateTokens({ id, email });
+        const { refreshToken } = newToken;
+        const userToken = await token.findOne({ where: { userId: id } });
+        !userToken ? await token.create({ userId: id, referenceToken: refreshToken }) : userToken.update({ referenceToken: refreshToken })
+        return { userToken: newToken, id, email, isActivated };
+      }
+    }
+
+  }
+
+
   async userActivate(activationLink) {
     const findLink = await user.findOne({ where: { activationLink } });
     if (!findLink) {
-      throw new Error('Bed link');
+      throw new Error('Bad link');
     } else {
       await findLink.update({ isActivated: true })
       return true
     }
   }
-  async userCheck(email, password) {
-    const verifiableUser = await user.findOne({ where: { email } });
-    if (!verifiableUser) {
-      throw new Error('No user on BD')
+
+
+
+
+  async logOut(referenceToken) {
+    if (!referenceToken) {
+      throw new Error('No token on cookie');
     } else {
-      const isPasswordEquals = await bcrypt.compare(password, verifiableUser.dataValues.password);
-      if (!isPasswordEquals) {
-        throw new Error('Bed password');
+      const removeToken = await token.findOne({ where: { referenceToken } });
+      if (!removeToken) {
+        throw new Error('No token on BD');
       } else {
-        const newToken = await generateTokens({ id: verifiableUser.dataValues.id, email: verifiableUser.dataValues.id });
-        const userToken = await token.findOne({ where: { userId: verifiableUser.dataValues.id } });
-        const updateToken = await userToken.update({ referenceToken: newToken.refreshToken });
-        if (!updateToken) {
-          throw new Error('Error to save on BD token');
-        } else {
-          const { id, isActivated, email } = verifiableUser.dataValues;
-          return { newToken, id, isActivated, email };
-        }
+        const destroy = await token.destroy({ where: { id: removeToken.dataValues.id } })
+        console.log(destroy);
+        return { referenceToken: referenceToken }
       }
     }
+
   }
+
+
 }
 
 module.exports = new UserService();
