@@ -14,8 +14,38 @@ class TokenService {
     if (!createdTokenInBD) {
       throw new Error('Error while creating token')
     } else {
-      return true
+      return createdTokenInBD
     }
+  }
+
+  async validateRefreshToken(candidate) {
+    try {
+      return jwt.verify(candidate, process.env.JWT_REFRESH_SECRET);
+    } catch (e) {
+      return null
+    }
+  }
+
+  async validateAccessToken(candidate) {
+    try {
+      return jwt.verify(candidate, process.env.JWT_ACCESS_SECRET);
+    } catch (e) {
+      return null
+    }
+  }
+
+  async updateRefreshToken(tokenObj, refreshToken) {
+    const update = await tokenObj.update({ referenceToken: refreshToken });
+    if (!update) {
+      throw new Error('Error update refreshToken');
+    } else return update;
+  }
+
+  async findUserRefreshToken(userId) {
+    const find = await token.findOne({ where: { userId } });
+    if (!find) {
+      return { status: false, message: 'No token at BD' }
+    } else return { status: true, token: find, message: 'All right' }
   }
 }
 

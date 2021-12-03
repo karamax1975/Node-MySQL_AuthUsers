@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const { user, token } = require('../models/index_model.js');
 const mailService = require('./mail-service.js');
-const { generateTokens } = require('./token-service.js');
+const { generateTokens, validateRefreshToken, findUserRefreshToken, updateRefreshToken, saveNewToken } = require('./token-service.js');
 
 
 class UserService {
@@ -26,7 +26,7 @@ class UserService {
 
       const { id } = newUser.dataValues;
       const userToken = await generateTokens({ id, email });
-      token.create({ userId: id, referenceToken: userToken.refreshToken });
+      saveNewToken(id, userToken.refreshToken)
       return {
         message: 'User create',
         user: email,
@@ -37,6 +37,7 @@ class UserService {
   }
 
   async logIn(userEmail, userPassword) {
+    const email = userEmail;
     const findUser = await user.findOne({ where: { email: userEmail } });
     if (!findUser) throw new Error('No user in BD');
     else {
@@ -46,10 +47,35 @@ class UserService {
       else {
         const newToken = await generateTokens({ id, email });
         const { refreshToken } = newToken;
-        const userToken = await token.findOne({ where: { userId: id } });
-        !userToken ? await token.create({ userId: id, referenceToken: refreshToken }) : userToken.update({ referenceToken: refreshToken })
+        const userToken = await findUserRefreshToken(id);
+        !userToken.status ? await saveNewToken(id, refreshToken) : await updateRefreshToken(userToken.token, refreshToken);
         return { userToken: newToken, id, email, isActivated };
       }
+    }
+
+  }
+
+  async refreshUserToken(oldToken) {
+    if (!oldToken) {
+      throw new Error('No token')
+    } else {
+      const validation = await validateRefreshToken(oldToken);
+      const { id, email } = validation;
+      const foundTokenInBD = await findUserRefreshToken(id);
+      if (!validation || !foundTokenInBD) {
+        throw new Error('Access is denied')
+      } else {
+        const newToken = await generateTokens({ id, email });
+        const { refreshToken } = newToken;
+        const userToken = await findUserRefreshToken(id);
+        if (!userToken) {
+          throw new Error('No token in BD')
+        } else {
+          await updateRefreshToken(userToken.token, refreshToken);
+          return { userToken: newToken, id, email }
+        }
+      }
+
     }
 
   }
@@ -68,7 +94,7 @@ class UserService {
 
 
 
-  async logOut(referenceToken) {
+  async userLogOut(referenceToken) {
     if (!referenceToken) {
       throw new Error('No token on cookie');
     } else {
@@ -77,7 +103,6 @@ class UserService {
         throw new Error('No token on BD');
       } else {
         const destroy = await token.destroy({ where: { id: removeToken.dataValues.id } })
-        console.log(destroy);
         return { referenceToken: referenceToken }
       }
     }

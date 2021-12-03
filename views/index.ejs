@@ -9,6 +9,14 @@
 </head>
 
 <body>
+
+
+
+
+
+
+  <a id="adminPage" href="/admin">Admin Page</a>
+
   <h1>Register</h1>
   <form id="reg">
     <input type="email">
@@ -29,45 +37,10 @@
 
 </body>
 
-<script>
-  const formReg = document.querySelector('#reg');
-  formReg.addEventListener('submit', (e) => {
-    const email = e.target[0].value;
-    const password = e.target[1].value;
 
-    const res = fetch('api/registration', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8'
-      },
-      body: JSON.stringify({ email, password })
-    })
-  })
-  // ------------------------------
-  const formLogIn = document.querySelector('#logIn');
-  formLogIn.addEventListener('submit', (e) => {
 
-    const email = e.target[0].value;
-    const password = e.target[1].value;
-
-    const res = fetch('api/logIn', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8'
-      },
-      body: JSON.stringify({ email, password })
-    })
-  })
-  // ----------------------------------------
-  const logOut = document.querySelector('#logOut');
-  logOut.addEventListener('click', (e) => {
-    const res = fetch('api/logOut', {
-      method: 'POST',
-
-    })
-  })
-
-</script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="public/js/index.js"></script>
 
 
 </html>
