@@ -8,7 +8,7 @@ const { generateTokens, validateRefreshToken, findUserRefreshToken, updateRefres
 class UserService {
 
   async registration(email, password) {
-    const candidate = await user.findOne({ where: { email: email } })
+    const candidate = await user.findOne({ where: { email } })
     if (candidate) {
       throw new Error(`User with this email ${email} exists`)
     } else {

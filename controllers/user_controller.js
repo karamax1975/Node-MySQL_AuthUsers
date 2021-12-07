@@ -11,11 +11,11 @@ class User {
 
   async registration(req, res, next) {
     try {
-      const error = validationResult(req);
+      const error = validationResult(req.body.data);
       if (!error.isEmpty()) {
         return next(res.json({ error: error.array(), message: "Error validation" }));
       }
-      const { email, password } = req.body;
+      const { email, password } = req.body.data;
       const newUser = await registration(email, password);
       res.cookie('referenceToken', newUser.referenceToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true })
       res.json(newUser);

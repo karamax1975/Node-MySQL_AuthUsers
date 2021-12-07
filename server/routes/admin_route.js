@@ -4,7 +4,7 @@ const adminController = require('../../controllers/admin_controller.js');
 
 
 
-adminRoutes.get('/getUsers', adminController.getAllUsers)
+adminRoutes.post('/getUsers', adminController.getAllUsers)
 
 
 module.exports = adminRoutes;

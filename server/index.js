@@ -10,6 +10,7 @@ const logging = require('../middleware/loged.js')
 const indexRouter = require('./routes/index.js');
 const adminRoutes = require('./routes/admin_route.js');
 const authPage = require('../middleware/authPage_middleware.js');
+const apiDefender = require('../middleware/api_auth_middleware.js');
 
 
 const app = express();
@@ -29,7 +30,7 @@ app.use(logging)
 app.use('/public', express.static('public'));
 // 
 app.use('/api', indexRouter);
-app.use('/api/admin', adminRoutes)
+app.use('/api/admin', apiDefender, adminRoutes)
 
 app.use('/admin', authPage, (req, res, next) => {
   res.render('admin.ejs');
